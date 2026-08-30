@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工廠製程品質界線調整器｜Jvision 系統 Demo</title>
+<link rel="icon" href="../../favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&amp;family=Fira+Sans:wght@300;400;500;600;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2/dist/apexcharts.min.js"></script>
+<style>
+:root{
+  --color-primary:#2563eb;
+  --color-on-primary:#fff;
+  --color-secondary:#3b82f6;
+  --color-on-secondary:#000;
+  --color-accent:#ea580c;
+  --color-on-accent:#000;
+  --color-background:#f8fafc;
+  --color-foreground:#1e293b;
+  --color-card:#fff;
+  --color-card-foreground:#1e293b;
+  --color-muted:#e9eff8;
+  --color-muted-foreground:#475569;
+  --color-border:#e2e8f0;
+  --color-destructive:#dc2626;
+  --color-on-destructive:#fff;
+  --color-ring:#2563eb;
+  --blue:#2563eb;
+  --ink:#1e293b;
+  --muted:#475569;
+  --line:#e2e8f0;
+  --green:#087a55;
+  --amber:#9a4b06;
+  --red:#c11f1f;
+  --shadow:0 12px 28px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  color:var(--color-foreground);
+  background:
+    linear-gradient(rgba(37,99,235,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,235,.035) 1px,transparent 1px),
+    var(--color-background);
+  background-size:32px 32px;
+  font-family:"Fira Sans",sans-serif;
+  line-height:1.5;
+}
+button,input,select,textarea{font:inherit}
+button,.selectable,[data-i],[data-action]{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--color-ring);
+  outline-offset:3px;
+}
+.material-symbols-outlined{font-size:19px;line-height:1}
+.mono,.metric-value,.cluster-stat b,.factor-score,.score b,.limit-num strong,
+.release-meta b,output,td:nth-child(n+2){font-family:"Fira Code",monospace;font-variant-numeric:tabular-nums}
+.app{min-height:100vh;display:grid;grid-template-columns:246px minmax(0,1fr)}
+.sidebar{
+  position:sticky;top:0;z-index:30;height:100vh;padding:26px 18px;
+  display:flex;flex-direction:column;color:#dbeafe;background:#0f1d34;
+  border-right:1px solid #243755;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:0 8px 27px}
+.brand-mark{
+  width:42px;height:42px;display:grid;place-items:center;border-radius:8px;
+  color:#fff;background:var(--color-primary);
+  box-shadow:6px 6px 0 #1e40af;
+}
+.brand strong{display:block;color:#fff;font-size:15px;letter-spacing:.01em}
+.brand small{display:block;margin-top:2px;color:#9eb4d2;font:500 10px "Fira Code",monospace}
+.nav-label{padding:0 10px 9px;color:#8298b8;font:600 10px "Fira Code",monospace;letter-spacing:.15em}
+.nav{display:grid;gap:5px}
+.nav-btn{
+  width:100%;min-height:45px;padding:10px;border:1px solid transparent;border-radius:7px;
+  display:flex;align-items:center;gap:10px;text-align:left;color:#b9cae2;background:transparent;
+  font-size:13px;font-weight:600;transition:background .2s,border-color .2s,color .2s,transform .2s;
+}
+.nav-btn:hover{color:#fff;background:#172b49;border-color:#365174;transform:translateX(2px)}
+.nav-btn.active{color:#fff;background:var(--color-primary);border-color:#60a5fa;box-shadow:4px 4px 0 #172b49}
+.nav-btn .num{margin-left:auto;color:#8ea7c9;font:500 10px "Fira Code",monospace}
+.nav-btn.active .num{color:#dbeafe}
+.side-foot{margin-top:auto;padding:18px 9px 0;border-top:1px solid #2e4361}
+.live{display:flex;align-items:center;gap:8px;color:#e2e8f0;font-size:12px;font-weight:600}
+.dot{width:9px;height:9px;border:2px solid #bbf7d0;border-radius:50%;background:#16a36f;box-shadow:0 0 0 4px rgba(22,163,111,.16)}
+.side-foot p{margin:9px 0 0;color:#8ea3bf;font:400 10px "Fira Code",monospace}
+.main{min-width:0}
+.topbar{
+  position:sticky;top:0;z-index:20;height:72px;padding:0 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(248,250,252,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);
+}
+.crumb{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+.crumb strong{color:var(--ink);font-weight:700}
+.top-actions{display:flex;align-items:center;gap:8px}
+.icon-btn,.plain-btn,.primary-btn{
+  min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:6px;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  color:var(--ink);background:#fff;font-size:12px;font-weight:700;
+  transition:color .2s,background .2s,border-color .2s,box-shadow .2s,transform .2s;
+}
+.icon-btn{width:42px;padding:0}
+.icon-btn:hover,.plain-btn:hover{color:var(--blue);border-color:#93b4f8;box-shadow:3px 3px 0 #dbeafe}
+.primary-btn{color:#fff;background:var(--color-primary);border-color:var(--color-primary);box-shadow:4px 4px 0 #bfdbfe}
+.primary-btn:hover{background:#1d4ed8;transform:translate(-1px,-1px);box-shadow:6px 6px 0 #bfdbfe}
+.content{max-width:1580px;margin:auto;padding:31px 32px 46px}
+.view{display:none}
+.view.active{display:block;animation:view-in .38s cubic-bezier(.2,.75,.3,1)}
+.page-head{
+  position:relative;margin-bottom:22px;padding:24px 25px;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:22px;
+  color:#fff;background:#12223b;border:1px solid #28415f;border-radius:8px;
+  box-shadow:8px 8px 0 #dbeafe;overflow:hidden;
+}
+.page-head:after{
+  content:"";position:absolute;right:-50px;bottom:-95px;width:250px;height:180px;
+  border:26px solid rgba(59,130,246,.25);transform:rotate(-12deg);pointer-events:none;
+}
+.page-head>div,.page-head>button,.page-head>span{position:relative;z-index:1}
+.eyebrow{
+  margin-bottom:8px;display:flex;align-items:center;gap:7px;color:#93c5fd;
+  font:600 11px "Fira Code",monospace;letter-spacing:.08em;text-transform:uppercase;
+}
+h1,h2,h3,p{margin-top:0}
+h1{margin-bottom:7px;color:#fff;font-size:29px;line-height:1.2;letter-spacing:-.02em}
+.page-head p{max-width:790px;margin:0;color:#c9d8eb;font-size:13px}
+.head-chips{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.chip,.badge{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--line);
+  border-radius:4px;white-space:nowrap;color:#334155;background:#fff;
+  font:600 10px "Fira Code",monospace;
+}
+.page-head .chip{color:#dbeafe;background:#172d4c;border-color:#3e5c82}
+.chip.purple,.badge.purple{color:#17469b;background:#eaf2ff;border-color:#a9c6fa}
+.badge.green{color:#075d43;background:#e7f8f1;border-color:#92d9c0}
+.badge.amber{color:#7c3900;background:#fff3df;border-color:#efc680}
+.badge.red{color:#a71515;background:#fff0f0;border-color:#f1abab}
+.card,.metric,.cluster,.factor,.score,.channel{
+  color:var(--color-card-foreground);background:var(--color-card);
+  border:1px solid var(--line);border-radius:7px;box-shadow:var(--shadow);
+}
+.card-pad{padding:20px}
+.card-title{margin-bottom:17px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title h2,.card-title h3{margin:0;color:var(--ink);font-size:14px}
+.card-title small{color:var(--muted);font-size:11px}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(285px,.75fr);gap:18px}
+.grid-even{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.metric-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.metric{position:relative;min-width:0;padding:17px 17px 15px;border-top:3px solid var(--blue);box-shadow:4px 4px 0 #e6edf7}
+.metric-label{display:flex;justify-content:space-between;gap:6px;color:var(--muted);font-size:11px;font-weight:600}
+.metric-label .material-symbols-outlined{color:var(--blue)}
+.metric-value{margin:8px 0 4px;color:var(--ink);font-size:25px;font-weight:700;letter-spacing:-.04em}
+.metric-note{color:var(--green);font-size:10px;font-weight:600}
+.metric-note.warn{color:var(--amber)}
+.chart{width:100%;min-height:290px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:5px}
+table{width:100%;min-width:680px;border-collapse:collapse;background:#fff}
+th{
+  padding:11px 13px;text-align:left;color:#334155;background:#eaf0f8;
+  border-bottom:2px solid #cbd5e1;font:600 10px "Fira Code",monospace;letter-spacing:.04em;
+}
+td{padding:12px 13px;border-bottom:1px solid #e7edf5;font-size:12px}
+td:nth-child(n+2){text-align:right}
+td:last-child{text-align:left}
+tr:last-child td{border-bottom:0}
+tr.selectable:hover,tbody tr:hover{background:#f3f7fd}
+.health-list{display:grid;gap:9px}
+.health-item{
+  padding:13px;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:5px;
+  transition:border-color .2s,box-shadow .2s,transform .2s;
+}
+.health-item:hover{border-color:#8db0ef;box-shadow:4px 4px 0 #e8effa;transform:translateY(-1px)}
+.health-top,.health-meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.health-top strong{color:var(--ink);font-size:12px}
+.health-meta{margin-top:9px;color:var(--muted);font:400 10px "Fira Code",monospace}
+.progress{height:7px;margin-top:7px;overflow:hidden;background:#dde6f2;border-radius:2px}
+.progress span{height:100%;display:block;background:repeating-linear-gradient(135deg,var(--blue) 0 7px,#5084dc 7px 12px)}
+.alert-box{margin-top:14px;padding:11px 13px;border-left:4px solid var(--amber);border-radius:3px;background:#fff6e8;font-size:11px}
+.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-bottom:16px}
+.field{min-height:40px;padding:0 11px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:5px}
+.toolbar .spacer{margin-left:auto}
+.segment{display:flex;padding:3px;background:#e7edf5;border-radius:5px}
+.segment button{padding:7px 11px;border:0;border-radius:3px;color:var(--muted);background:transparent;font-size:11px;font-weight:700}
+.segment button.on{color:#fff;background:var(--blue)}
+.cluster-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.cluster{position:relative;padding:17px;overflow:hidden;border-top:4px solid var(--blue)}
+.cluster.alt{border-top-color:#087a55}.cluster.warm{border-top-color:#c66309}
+.cluster-head{display:flex;justify-content:space-between;gap:8px}
+.cluster h3{margin-bottom:4px;color:var(--ink);font-size:13px}
+.cluster p{margin-bottom:14px;color:var(--muted);font-size:10px}
+.cluster-stat{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.cluster-stat div{padding:9px;background:#f1f5f9;border-left:2px solid #cbd5e1}
+.cluster-stat b{display:block;color:var(--ink);font-size:14px}
+.cluster-stat span{color:var(--muted);font-size:9px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{padding:4px 7px;color:#334155;background:#e9eff8;border-radius:3px;font-size:9px}
+.rule-panel{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.rule-builder{padding:18px}
+.rule-line{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:10px;margin-bottom:11px}
+.rule-line label{color:var(--muted);font-size:10px;font-weight:700}
+.rule-line select{width:100%}
+.audit{padding:18px;color:#e2e8f0;background:#12223b;border:1px solid #2e4868;border-radius:7px;box-shadow:5px 5px 0 #dbeafe}
+.audit h3{margin-bottom:15px;font-size:13px}
+.audit-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #304765;font-size:10px}
+.audit-row:last-child{border:0}
+.audit-time{min-width:44px;color:#93c5fd;font-family:"Fira Code",monospace}
+.effect-layout{display:grid;grid-template-columns:minmax(270px,.7fr) minmax(0,1.3fr);gap:18px}
+.factor-list{display:grid;gap:10px}
+.factor{padding:13px;box-shadow:none}
+.factor.selected{border-color:var(--blue);box-shadow:4px 4px 0 #dbeafe}
+.factor-head{display:flex;justify-content:space-between;gap:10px;font-size:11px}
+.factor-score{color:var(--blue);font-weight:700}
+.range-track{position:relative;height:7px;margin:10px 0 6px;background:#d8e4f6;border-radius:1px}
+.range-track:before{content:"";position:absolute;inset:0 40% 0 0;background:var(--blue)}
+.range-track i{position:absolute;top:-4px;width:15px;height:15px;border:3px solid var(--blue);border-radius:2px;background:#fff}
+.factor small{color:var(--muted);font-size:10px}
+.insight-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.insight{padding:12px;background:#f1f5f9;border:1px solid var(--line);border-radius:5px}
+.insight b{display:block;color:var(--ink);font:700 15px "Fira Code",monospace}
+.insight span{color:var(--muted);font-size:9px}
+.formula{margin-top:14px;padding:11px 13px;color:#153f89;background:#eaf2ff;border-left:3px solid var(--blue);font:500 11px "Fira Code",monospace}
+.sim-layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:18px}
+.sliders{padding:20px}
+.slider-row{margin-bottom:20px}
+.slider-row label{display:flex;justify-content:space-between;margin-bottom:8px;color:var(--ink);font-size:11px;font-weight:700}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.scenario-btn{width:100%;margin-bottom:8px;padding:11px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:5px}
+.scenario-btn:hover{border-color:#8eb1ef}
+.scenario-btn.active{border-color:var(--blue);background:#edf4ff;box-shadow:3px 3px 0 #cfe0fb}
+.scenario-btn strong{display:block;color:var(--ink);font-size:11px}
+.scenario-btn small{color:var(--muted);font-size:10px}
+.scorecards{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:10px}
+.score{padding:12px;border-top:3px solid var(--blue);box-shadow:none}
+.score span{color:var(--muted);font-size:9px}
+.score b{display:block;margin-top:3px;color:var(--ink);font-size:17px}
+.matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.matrix div{padding:9px 4px;text-align:center;border:1px solid transparent;border-radius:3px;font-size:9px}
+.risk-low{color:#075d43;background:#e5f6ef;border-color:#9bd8c4!important}
+.risk-mid{color:#743600;background:#fff2dc;border-color:#eec27b!important}
+.risk-high{color:#a71515;background:#ffeded;border-color:#efabab!important}
+.review-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(290px,.6fr);gap:18px}
+.limit-compare{display:grid;grid-template-columns:1fr 48px 1fr;align-items:stretch;gap:10px}
+.limit-box{padding:16px;border:1px solid var(--line);border-radius:5px}
+.limit-box.proposed{border:2px solid var(--blue);background:#f4f8ff;box-shadow:4px 4px 0 #dbeafe}
+.limit-box h3{margin-bottom:14px;color:var(--ink);font-size:12px}
+.limit-num{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:11px}
+.limit-num:last-child{border:0}
+.arrow-col{display:grid;place-items:center;color:var(--blue)}
+.reason-list{display:grid;gap:9px;margin-top:16px}
+.reason{display:flex;gap:9px;padding:11px;background:#f1f5f9;border-left:3px solid var(--blue);font-size:10px}
+.reason .material-symbols-outlined{color:var(--blue);font-size:18px}
+.approval{padding:20px;border-top:4px solid var(--color-accent)}
+.approver{display:flex;align-items:center;gap:10px;padding-bottom:15px;border-bottom:1px solid var(--line)}
+.avatar{width:40px;height:40px;display:grid;place-items:center;color:#fff;background:#1d4ed8;border-radius:4px;font-weight:700}
+.approver strong{display:block;color:var(--ink);font-size:12px}
+.approver small{color:var(--muted);font-size:9px}
+.checklist{display:grid;gap:10px;margin:16px 0}
+.checkitem{display:flex;align-items:flex-start;gap:9px;font-size:10px}
+.checkitem input{margin-top:3px;accent-color:var(--blue)}
+.note-area{width:100%;min-height:75px;padding:10px;resize:vertical;border:1px solid var(--line);border-radius:5px;font-size:10px}
+.action-row{display:flex;gap:8px;margin-top:12px}
+.action-row button{flex:1}
+.release-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-bottom:18px}
+.release-status{
+  position:relative;padding:23px;overflow:hidden;color:#fff;background:#12223b;
+  border:1px solid #2f4a6d;border-radius:7px;box-shadow:7px 7px 0 #dbeafe;
+}
+.release-status:after{content:"";position:absolute;right:-45px;top:-72px;width:180px;height:180px;border:24px solid rgba(59,130,246,.28);transform:rotate(18deg)}
+.release-status>*{position:relative;z-index:1}
+.release-status h2{margin-bottom:8px;font-size:18px}
+.release-status p{max-width:460px;color:#c9d8eb;font-size:11px}
+.release-meta{display:flex;flex-wrap:wrap;gap:24px;margin-top:22px}
+.release-meta b{display:block;font-size:14px}
+.release-meta span{color:#9db2ce;font-size:9px}
+.timeline{display:grid}
+.timeline-row{display:grid;grid-template-columns:24px 1fr;gap:10px;min-height:60px}
+.timeline-mark{position:relative;display:flex;justify-content:center}
+.timeline-mark:before{content:"";position:absolute;top:15px;bottom:-5px;width:2px;background:#cbd5e1}
+.timeline-row:last-child .timeline-mark:before{display:none}
+.timeline-mark i{z-index:1;width:12px;height:12px;margin-top:4px;background:var(--green);border:3px solid #bce8d8;border-radius:2px}
+.timeline-body strong{display:block;color:var(--ink);font-size:11px}
+.timeline-body span{color:var(--muted);font:400 9px "Fira Code",monospace}
+.channel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.channel{padding:12px;box-shadow:none}
+.channel-head{display:flex;align-items:center;justify-content:space-between;font-size:10px}
+.channel b{color:var(--ink)}
+.channel p{margin:7px 0 0;color:var(--muted);font:400 9px "Fira Code",monospace}
+.toast{
+  position:fixed;right:24px;bottom:24px;z-index:50;padding:13px 16px;
+  color:#fff;background:#12223b;border-left:4px solid var(--color-accent);border-radius:4px;
+  box-shadow:var(--shadow);font-size:11px;transform:translateY(90px);opacity:0;transition:.25s;
+}
+.toast.show{transform:none;opacity:1}
+@keyframes view-in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@media(max-width:1050px){
+  .metric-row,.scorecards{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.effect-layout,.sim-layout,.review-layout,.release-hero{grid-template-columns:1fr}
+  .cluster-board{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .app{display:block}.sidebar{position:sticky;top:0;height:auto;padding:10px 14px}
+  .brand,.nav-label,.side-foot{display:none}.nav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .nav-btn{flex:0 0 48px;width:48px;justify-content:center;padding:10px}
+  .nav-btn span:not(.material-symbols-outlined),.nav-btn .num{display:none}
+  .topbar{top:62px;height:58px;padding:0 18px}.crumb span:first-child,.top-actions .plain-btn{display:none}
+  .content{padding:20px 18px 34px}.page-head{display:block;padding:20px}
+  .head-chips{justify-content:flex-start;margin-top:13px}.page-head>.primary-btn{width:100%;margin-top:15px}
+  h1{font-size:23px}.grid-even,.rule-panel,.cluster-board,.grid-3{grid-template-columns:1fr}
+  .insight-strip,.channel-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .metric-row,.scorecards{grid-template-columns:1fr 1fr}.metric-value{font-size:20px}
+  .card-pad{padding:15px}.limit-compare{grid-template-columns:1fr}.arrow-col{height:30px;transform:rotate(90deg)}
+  .toolbar .spacer{display:none}.top-actions .icon-btn:first-child{display:none}
+}
+@media(max-width:375px){
+  .metric-row,.scorecards{grid-template-columns:1fr}.content{padding-inline:12px}
+}
+@media(max-width:720px){
+  .review-layout,.review-layout>div,.review-layout .card,.limit-box{max-width:100%;min-width:0}
+  .limit-compare{grid-template-columns:minmax(0,1fr)}
+  .card-title,.limit-num{min-width:0;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*:before,*:after{animation:none!important;transition:none!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><span class="material-symbols-outlined">tune</span></div>
+      <div><strong>LimitPilot</strong><small>Adaptive QMS Engine</small></div>
+    </div>
+    <div class="nav-label">調整流程</div>
+    <nav class="nav" aria-label="製程控制限工作流程">
+      <button class="nav-btn" data-i="0"><span class="material-symbols-outlined">stacked_line_chart</span><span>界限健康度</span><span class="num">01</span></button>
+      <button class="nav-btn" data-i="1"><span class="material-symbols-outlined">category</span><span>產品情境</span><span class="num">02</span></button>
+      <button class="nav-btn" data-i="2"><span class="material-symbols-outlined">device_thermostat</span><span>環境效應</span><span class="num">03</span></button>
+      <button class="nav-btn" data-i="3"><span class="material-symbols-outlined">model_training</span><span>候選模擬</span><span class="num">04</span></button>
+      <button class="nav-btn" data-i="4"><span class="material-symbols-outlined">fact_check</span><span>版本核准</span><span class="num">05</span></button>
+      <button class="nav-btn" data-i="5"><span class="material-symbols-outlined">sync_alt</span><span>發布監測</span><span class="num">06</span></button>
+    </nav>
+    <div class="side-foot">
+      <div class="live"><span class="dot"></span>QMS 資料流正常</div>
+      <p>品質報表 · 批次追溯 · SPC 數據</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="crumb"><span>生產製造</span><span>／</span><strong id="crumbText">控制限健康度</strong></div>
+      <div class="top-actions">
+        <button class="icon-btn" aria-label="查看通知"><span class="material-symbols-outlined">notifications</span></button>
+        <button class="plain-btn"><span class="material-symbols-outlined">history</span>操作紀錄</button>
+        <button class="icon-btn" aria-label="使用者帳戶"><span class="material-symbols-outlined">account_circle</span></button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="view" id="view0">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">stacked_line_chart</span>階段 01 · 廠長</div>
+            <h1>檢視界限失配</h1>
+            <p>從高誤報或高漏報製程中選定本輪調整範圍，優先處理已影響產能與品質判讀的特性。</p>
+          </div>
+          <div class="head-chips"><span class="chip purple">分析窗：近 30 日</span><span class="chip">12 條產線</span></div>
+        </div>
+
+        <div class="metric-row">
+          <div class="metric"><div class="metric-label">需重估特性<span class="material-symbols-outlined">warning</span></div><div class="metric-value">18</div><div class="metric-note warn">較上期 +4 項</div></div>
+          <div class="metric"><div class="metric-label">平均誤報率<span class="material-symbols-outlined">campaign</span></div><div class="metric-value">7.8%</div><div class="metric-note warn">目標低於 3%</div></div>
+          <div class="metric"><div class="metric-label">漏報風險<span class="material-symbols-outlined">policy</span></div><div class="metric-value">2.4%</div><div class="metric-note">下降 0.7 pp</div></div>
+          <div class="metric"><div class="metric-label">本月停線<span class="material-symbols-outlined">pause_circle</span></div><div class="metric-value">11.6h</div><div class="metric-note">可避免 6.2h</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card card-pad">
+            <div class="card-title"><h2>製程特性風險分布</h2><span class="badge purple">依誤報率排序</span></div>
+            <div id="healthChart" class="chart" aria-label="製程特性誤報與漏報風險圖表"></div>
+          </div>
+          <div class="card card-pad">
+            <div class="card-title"><h2>優先檢視清單</h2><small>適配分數越低越急迫</small></div>
+            <div class="health-list">
+              <div class="health-item">
+                <div class="health-top"><strong>塗佈厚度 · L03</strong><span class="badge red">高風險</span></div>
+                <div class="health-meta"><span>誤報 12.8%</span><span>適配 42/100</span></div><div class="progress"><span style="width:42%"></span></div>
+              </div>
+              <div class="health-item">
+                <div class="health-top"><strong>回焊峰值溫度 · L07</strong><span class="badge amber">待校準</span></div>
+                <div class="health-meta"><span>誤報 9.6%</span><span>適配 56/100</span></div><div class="progress"><span style="width:56%"></span></div>
+              </div>
+              <div class="health-item">
+                <div class="health-top"><strong>封裝壓合力 · L11</strong><span class="badge amber">漂移</span></div>
+                <div class="health-meta"><span>漏報 4.1%</span><span>適配 61/100</span></div><div class="progress"><span style="width:61%"></span></div>
+              </div>
+              <div class="health-item">
+                <div class="health-top"><strong>點膠寬度 · L02</strong><span class="badge green">觀察</span></div>
+                <div class="health-meta"><span>誤報 5.2%</span><span>適配 73/100</span></div><div class="progress"><span style="width:73%"></span></div>
+              </div>
+            </div>
+            <div class="alert-box"><strong>AI 判讀：</strong>塗佈厚度的誤報有 64% 集中於高濕夜班，建議納入本輪調整。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view1">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">category</span>階段 02 · 工業工程師</div>
+            <h1>建立產品情境</h1>
+            <p>按產品組合、設備、配方與批量切分可比較的製程群組，避免用單一控制限混合不同分布。</p>
+          </div>
+          <button class="primary-btn" data-action="cluster"><span class="material-symbols-outlined">auto_awesome</span>重新建議分群</button>
+        </div>
+
+        <div class="toolbar">
+          <select class="field" aria-label="選擇製程"><option>塗佈厚度</option><option>回焊峰值溫度</option><option>封裝壓合力</option></select>
+          <select class="field" aria-label="選擇分析期間"><option>近 90 日</option><option>近 180 日</option></select>
+          <div class="segment" aria-label="檢視模式"><button class="on">群組卡片</button><button>批次明細</button></div>
+          <span class="spacer"></span><span class="chip">納入批次 2,846</span><span class="chip purple">輪廓係數 0.81</span>
+        </div>
+
+        <div class="cluster-board">
+          <article class="cluster">
+            <div class="cluster-head"><div><h3>C1 · 高黏度精密型</h3><p>配方 R-18 · 大面板產品</p></div><span class="badge purple">38%</span></div>
+            <div class="cluster-stat"><div><b>1,082</b><span>批次數</span></div><div><b>42.6 μm</b><span>群組均值</span></div><div><b>1.84</b><span>標準差</span></div><div><b>EQ-03/04</b><span>主要設備</span></div></div>
+            <div class="tag-row"><span class="tag">批量 800+</span><span class="tag">濕度敏感</span><span class="tag">夜班偏移</span></div>
+          </article>
+          <article class="cluster alt">
+            <div class="cluster-head"><div><h3>C2 · 標準量產型</h3><p>配方 R-12 · 主力產品群</p></div><span class="badge green">44%</span></div>
+            <div class="cluster-stat"><div><b>1,252</b><span>批次數</span></div><div><b>39.8 μm</b><span>群組均值</span></div><div><b>1.12</b><span>標準差</span></div><div><b>EQ-01/02</b><span>主要設備</span></div></div>
+            <div class="tag-row"><span class="tag">批量 500–800</span><span class="tag">分布穩定</span><span class="tag">全班次</span></div>
+          </article>
+          <article class="cluster warm">
+            <div class="cluster-head"><div><h3>C3 · 小批試製型</h3><p>配方 R-21 · 多品種切換</p></div><span class="badge amber">18%</span></div>
+            <div class="cluster-stat"><div><b>512</b><span>批次數</span></div><div><b>41.1 μm</b><span>群組均值</span></div><div><b>2.26</b><span>標準差</span></div><div><b>EQ-05</b><span>主要設備</span></div></div>
+            <div class="tag-row"><span class="tag">批量 &lt;500</span><span class="tag">換線頻繁</span><span class="tag">樣本偏少</span></div>
+          </article>
+        </div>
+
+        <div class="rule-panel">
+          <div class="card rule-builder">
+            <div class="card-title"><h2>情境切分規則</h2><span class="badge green">3 條生效</span></div>
+            <div class="rule-line"><label>第一層</label><select class="field"><option>配方族群</option></select></div>
+            <div class="rule-line"><label>第二層</label><select class="field"><option>批量區間</option></select></div>
+            <div class="rule-line"><label>第三層</label><select class="field"><option>設備群組</option></select></div>
+            <div class="rule-line"><label>最小樣本</label><select class="field"><option>每群至少 300 批</option></select></div>
+          </div>
+          <div class="audit">
+            <h3>分群品質檢核</h3>
+            <div class="audit-row"><span class="audit-time">資料</span><span>缺值率 0.4%，均已依設備中位數補值</span></div>
+            <div class="audit-row"><span class="audit-time">分布</span><span>C1 與 C2 的均值差異達統計顯著</span></div>
+            <div class="audit-row"><span class="audit-time">樣本</span><span>3 個群組均超過最低樣本門檻</span></div>
+            <div class="audit-row"><span class="audit-time">追溯</span><span>2,846 批皆可連結料號、設備與配方版本</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view2">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">device_thermostat</span>階段 03 · 製程工程師</div>
+            <h1>估算環境效應</h1>
+            <p>分析溫濕度、班次與季節對製程均值及變異的影響，找出需要動態補償的條件。</p>
+          </div>
+          <div class="head-chips"><span class="chip purple">情境 C1</span><span class="chip">模型 R² 0.87</span></div>
+        </div>
+
+        <div class="effect-layout">
+          <div class="card card-pad">
+            <div class="card-title"><h2>影響因子</h2><small>依解釋力排序</small></div>
+            <div class="factor-list">
+              <div class="factor selected">
+                <div class="factor-head"><strong>相對濕度</strong><span class="factor-score">+0.68</span></div>
+                <div class="range-track"><i style="left:68%"></i></div><small>每增加 10% RH，厚度均值 +0.74 μm</small>
+              </div>
+              <div class="factor">
+                <div class="factor-head"><strong>環境溫度</strong><span class="factor-score">−0.34</span></div>
+                <div class="range-track"><i style="left:34%"></i></div><small>超過 27°C 後變異擴大 18%</small>
+              </div>
+              <div class="factor">
+                <div class="factor-head"><strong>夜班效應</strong><span class="factor-score">+0.27</span></div>
+                <div class="range-track"><i style="left:27%"></i></div><small>夜班均值較日班高 0.41 μm</small>
+              </div>
+              <div class="factor">
+                <div class="factor-head"><strong>季節效應</strong><span class="factor-score">+0.16</span></div>
+                <div class="range-track"><i style="left:16%"></i></div><small>梅雨季的殘差變異增加 9%</small>
+              </div>
+            </div>
+            <div class="formula">建議補償：中心線 = 42.1 + 0.074 × (RH − 60) + 0.41 × 夜班</div>
+          </div>
+
+          <div class="card card-pad">
+            <div class="card-title"><h2>濕度與厚度偏移</h2><span class="badge purple">95% 信賴區間</span></div>
+            <div id="effectChart" class="chart" aria-label="濕度與製程厚度偏移圖表"></div>
+            <div class="insight-strip">
+              <div class="insight"><b>64%</b><span>誤報可由濕度效應解釋</span></div>
+              <div class="insight"><b>0.31 μm</b><span>補償後殘差中位數</span></div>
+              <div class="insight"><b>−38%</b><span>預估夜班誤報降幅</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view3">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">model_training</span>階段 04 · 工業工程師</div>
+            <h1>模擬候選界限</h1>
+            <p>比較多組控制限在品質風險、誤報量、良率與產能上的表現，選出可審核方案。</p>
+          </div>
+          <button class="primary-btn" data-action="simulate"><span class="material-symbols-outlined">play_arrow</span>執行模擬</button>
+        </div>
+
+        <div class="sim-layout">
+          <div class="card sliders">
+            <div class="card-title"><h2>模擬條件</h2><span class="badge purple">C1</span></div>
+            <div class="slider-row"><label><span>下控制限 LCL</span><output id="lclOut">37.8 μm</output></label><input id="lclRange" type="range" min="365" max="395" value="378"></div>
+            <div class="slider-row"><label><span>上控制限 UCL</span><output id="uclOut">46.4 μm</output></label><input id="uclRange" type="range" min="445" max="480" value="464"></div>
+            <div class="slider-row"><label><span>風險容忍度</span><output id="riskOut">2.0%</output></label><input id="riskRange" type="range" min="5" max="40" value="20"></div>
+            <h3 style="font-size:12px;color:var(--ink)">快速方案</h3>
+            <button class="scenario-btn"><strong>A · 品質優先</strong><small>窄界限，最低漏報風險</small></button>
+            <button class="scenario-btn active"><strong>B · 建議平衡</strong><small>兼顧誤報與產能</small></button>
+            <button class="scenario-btn"><strong>C · 產能優先</strong><small>寬界限，需加強抽驗</small></button>
+          </div>
+
+          <div>
+            <div class="scorecards">
+              <div class="score"><span>預估誤報率</span><b>2.9%</b></div>
+              <div class="score"><span>預估漏報率</span><b>1.6%</b></div>
+              <div class="score"><span>首件良率</span><b>97.4%</b></div>
+              <div class="score"><span>可回收產能</span><b>5.8h</b></div>
+            </div>
+            <div class="card card-pad">
+              <div class="card-title"><h2>候選界限效能曲線</h2><span class="badge green">建議採方案 B</span></div>
+              <div id="simulationChart" class="chart" aria-label="候選界限模擬效能圖表"></div>
+            </div>
+            <div class="card card-pad" style="margin-top:12px">
+              <div class="card-title"><h2>情境壓力測試</h2><small>12,000 次蒙地卡羅模擬</small></div>
+              <div class="matrix">
+                <div></div><div><b>正常環境</b></div><div><b>高濕</b></div><div><b>夜班高濕</b></div>
+                <div><b>方案 A</b></div><div class="risk-low">低風險</div><div class="risk-mid">中風險</div><div class="risk-high">高誤報</div>
+                <div><b>方案 B</b></div><div class="risk-low">低風險</div><div class="risk-low">低風險</div><div class="risk-mid">可接受</div>
+                <div><b>方案 C</b></div><div class="risk-mid">需抽驗</div><div class="risk-mid">需抽驗</div><div class="risk-high">高漏報</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view4">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">fact_check</span>階段 05 · 品質主管</div>
+            <h1>核准界限版本</h1>
+            <p>並列現行與建議控制限，檢視不確定區間、變更理由和證據後核定適用版本。</p>
+          </div>
+          <span class="badge amber">ADA-005 · 待核准</span>
+        </div>
+
+        <div class="review-layout">
+          <div>
+            <div class="card card-pad">
+              <div class="card-title"><h2>QMS-LIM-042 版本比較</h2><span class="chip purple">C1 高黏度精密型</span></div>
+              <div class="limit-compare">
+                <div class="limit-box">
+                  <h3>現行版本 v3.2</h3>
+                  <div class="limit-num"><span>中心線</span><strong>41.0 μm</strong></div>
+                  <div class="limit-num"><span>LCL</span><strong>37.2 μm</strong></div>
+                  <div class="limit-num"><span>UCL</span><strong>44.8 μm</strong></div>
+                  <div class="limit-num"><span>誤報率</span><strong style="color:var(--red)">7.8%</strong></div>
+                </div>
+                <div class="arrow-col"><span class="material-symbols-outlined">arrow_forward</span></div>
+                <div class="limit-box proposed">
+                  <h3>建議版本 v3.3</h3>
+                  <div class="limit-num"><span>動態中心線</span><strong>42.1 ± 補償</strong></div>
+                  <div class="limit-num"><span>LCL</span><strong>37.8 μm</strong></div>
+                  <div class="limit-num"><span>UCL</span><strong>46.4 μm</strong></div>
+                  <div class="limit-num"><span>預估誤報率</span><strong style="color:var(--green)">2.9%</strong></div>
+                </div>
+              </div>
+              <div class="reason-list">
+                <div class="reason"><span class="material-symbols-outlined">humidity_percentage</span><span><strong>環境證據：</strong>相對濕度可解釋 64% 的異常警報，納入動態中心線補償。</span></div>
+                <div class="reason"><span class="material-symbols-outlined">science</span><span><strong>模擬證據：</strong>12,000 次壓力測試中，方案 B 的漏報率上限為 1.9%。</span></div>
+                <div class="reason"><span class="material-symbols-outlined">verified</span><span><strong>追溯證據：</strong>使用 2,846 批 SPC 數據，涵蓋 4 台設備與三個班次。</span></div>
+              </div>
+            </div>
+
+            <div class="card card-pad" style="margin-top:18px">
+              <div class="card-title"><h2>不確定性與防護條件</h2><span class="badge green">風險可控</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>檢核項</th><th>估計值</th><th>95% 區間</th><th>防護條件</th></tr></thead>
+                  <tbody>
+                    <tr><td>誤報率</td><td>2.9%</td><td>2.4–3.5%</td><td>超過 4% 自動回退</td></tr>
+                    <tr><td>漏報率</td><td>1.6%</td><td>1.2–1.9%</td><td>連續 2 批偏移即攔截</td></tr>
+                    <tr><td>中心線補償</td><td>±1.2 μm</td><td>±0.9–1.4 μm</td><td>補償上限鎖定 1.5 μm</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <aside class="card approval">
+            <div class="approver"><div class="avatar">陳</div><div><strong>陳雅雯 · 品質主管</strong><small>最終核准人 · SLA 剩餘 6 小時</small></div></div>
+            <div class="checklist">
+              <label class="checkitem"><input type="checkbox" checked><span>已確認模型使用的 SPC 批次可完整追溯</span></label>
+              <label class="checkitem"><input type="checkbox" checked><span>已確認候選界限未超出客戶規格限</span></label>
+              <label class="checkitem"><input type="checkbox" checked><span>已確認回退門檻及觀察期間</span></label>
+              <label class="checkitem"><input type="checkbox"><span>已完成夜班首批現場覆核</span></label>
+            </div>
+            <label for="approvalNote" style="font-size:11px;font-weight:700">核准意見</label>
+            <textarea id="approvalNote" class="note-area" placeholder="輸入核准或退回原因">同意先於 L03 灰度發布，觀察 14 日後再擴至同設備群。</textarea>
+            <div class="action-row">
+              <button class="plain-btn" data-action="reject">退回補件</button>
+              <button class="primary-btn" data-action="approve">核准 v3.3</button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="view5">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow"><span class="material-symbols-outlined">sync_alt</span>階段 06 · 製程工程師</div>
+            <h1>發布並觀察成效</h1>
+            <p>同步核准界限至 QMS 與 SCADA，持續觀察變更後的告警品質、製程穩定度與回退條件。</p>
+          </div>
+          <button class="primary-btn" data-action="release"><span class="material-symbols-outlined">rocket_launch</span>發布至下一產線</button>
+        </div>
+
+        <div class="release-hero">
+          <div class="release-status">
+            <span class="badge green">運行中 · v3.3</span>
+            <h2 style="margin-top:15px">L03 塗佈厚度控制限已同步</h2>
+            <p>目前以 25% 批次進行灰度觀察；若漏報率超過 2.2% 或連續兩批偏移，系統將自動回退至 v3.2。</p>
+            <div class="release-meta">
+              <div><b>2026/08/22 09:15</b><span>最近發布</span></div>
+              <div><b>286 批</b><span>已監測批次</span></div>
+              <div><b>99.98%</b><span>同步成功率</span></div>
+            </div>
+          </div>
+          <div class="card card-pad">
+            <div class="card-title"><h2>發布進度</h2><span class="chip purple">灰度 25%</span></div>
+            <div class="timeline">
+              <div class="timeline-row"><div class="timeline-mark"><i></i></div><div class="timeline-body"><strong>品質主管核准 v3.3</strong><span>08:42 · 簽章 QA-8841</span></div></div>
+              <div class="timeline-row"><div class="timeline-mark"><i></i></div><div class="timeline-body"><strong>QMS 規則驗證完成</strong><span>08:51 · 18/18 項通過</span></div></div>
+              <div class="timeline-row"><div class="timeline-mark"><i></i></div><div class="timeline-body"><strong>SCADA L03 同步成功</strong><span>09:15 · 設備回讀一致</span></div></div>
+              <div class="timeline-row"><div class="timeline-mark"><i style="background:var(--amber);border-color:#f8d599"></i></div><div class="timeline-body"><strong>14 日穩定性觀察</strong><span>進行中 · 第 3 日</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card card-pad">
+            <div class="card-title"><h2>變更後告警品質</h2><span class="badge green">誤報下降 61%</span></div>
+            <div id="monitorChart" class="chart" aria-label="發布後告警品質趨勢圖表"></div>
+          </div>
+          <div class="card card-pad">
+            <div class="card-title"><h2>來源系統同步</h2><span class="dot" aria-label="資料流正常"></span></div>
+            <div class="channel-grid">
+              <div class="channel"><div class="channel-head"><b>QMS</b><span class="badge green">正常</span></div><p>規則版本 v3.3<br>延遲 0.8 秒</p></div>
+              <div class="channel"><div class="channel-head"><b>SCADA</b><span class="badge green">正常</span></div><p>設備 L03 已回讀<br>延遲 1.2 秒</p></div>
+              <div class="channel"><div class="channel-head"><b>SPC Lake</b><span class="badge green">正常</span></div><p>286 批已入湖<br>延遲 2.1 分</p></div>
+            </div>
+            <div class="card-title" style="margin-top:20px"><h2>觀察門檻</h2><small>自動回退保護</small></div>
+            <div class="health-list">
+              <div class="health-item"><div class="health-top"><strong>誤報率</strong><span class="badge green">2.7% / 4.0%</span></div><div class="progress"><span style="width:67%"></span></div></div>
+              <div class="health-item"><div class="health-top"><strong>漏報率</strong><span class="badge green">1.4% / 2.2%</span></div><div class="progress"><span style="width:64%"></span></div></div>
+              <div class="health-item"><div class="health-top"><strong>資料延遲</strong><span class="badge green">2.1 / 10 分</span></div><div class="progress"><span style="width:21%"></span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-pad" style="margin-top:18px">
+          <div class="card-title"><h2>製程控制限自適應引擎資料列表</h2><span class="chip">可追溯操作紀錄</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>編號</th><th>項目</th><th>負責人</th><th>期限</th><th>階段</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">ADA-001</td><td>檢視界限失配</td><td>廠長</td><td>D+1</td><td><span class="badge purple">處理中</span></td></tr>
+                <tr><td class="mono">ADA-002</td><td>建立產品情境</td><td>工業工程師</td><td>D+2</td><td><span class="badge amber">待確認</span></td></tr>
+                <tr><td class="mono">ADA-003</td><td>估算環境效應</td><td>製程工程師</td><td>D+3</td><td><span class="badge amber">待確認</span></td></tr>
+                <tr><td class="mono">ADA-004</td><td>模擬候選界限</td><td>工業工程師</td><td>D+4</td><td><span class="badge green">已完成</span></td></tr>
+                <tr><td class="mono">ADA-005</td><td>核准界限版本</td><td>品質主管</td><td>D+5</td><td><span class="badge green">已完成</span></td></tr>
+                <tr><td class="mono">ADA-006</td><td>發布並觀察成效</td><td>製程工程師</td><td>D+6</td><td><span class="badge green">已完成</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const screenTitles = [
+    "控制限健康度",
+    "產品組合分群",
+    "環境效應建模",
+    "候選界限模擬",
+    "界限版本審核",
+    "控制限發布監測"
+  ];
+  const chartRegistry = {};
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let toastFrame = 0;
+
+  const baseChart = {
+    chart: {
+      fontFamily: '"Fira Sans", sans-serif',
+      foreColor: "#475569",
+      toolbar: { show: false },
+      animations: { enabled: !reducedMotion, speed: 400 }
+    },
+    colors: ["#2563eb", "#087a55", "#c66309", "#c11f1f"],
+    dataLabels: { enabled: false },
+    grid: { borderColor: "#dce5f0", strokeDashArray: 3 },
+    legend: { fontSize: "11px", labels: { colors: "#475569" } },
+    tooltip: { theme: "light" },
+    noData: { text: "資料載入中" }
+  };
+
+  function mergedOptions(extra) {
+    return Object.assign({}, baseChart, extra, {
+      chart: Object.assign({}, baseChart.chart, extra.chart || {})
+    });
+  }
+
+  function renderChartOnce(key, elementId, options) {
+    if (chartRegistry[key]) return;
+    const element = document.getElementById(elementId);
+    if (!element || element.clientWidth < 20 || typeof ApexCharts === "undefined") return;
+    chartRegistry[key] = new ApexCharts(element, options);
+    chartRegistry[key].render();
+  }
+
+  function initCharts(screenIndex) {
+    if (screenIndex === 0) {
+      renderChartOnce("health", "healthChart", mergedOptions({
+        chart: { type: "bar", height: 300 },
+        series: [
+          { name: "誤報率 %", data: [12.8, 9.6, 7.1, 5.2, 3.8] },
+          { name: "漏報風險 %", data: [2.1, 2.8, 4.1, 1.6, 1.2] }
+        ],
+        plotOptions: { bar: { borderRadius: 2, columnWidth: "48%" } },
+        xaxis: {
+          categories: ["塗佈厚度", "回焊峰溫", "封裝壓力", "點膠寬度", "貼合間隙"],
+          labels: { style: { colors: "#475569", fontSize: "10px" } }
+        },
+        yaxis: { labels: { formatter: value => value.toFixed(0) + "%" } },
+        stroke: { show: true, width: 2, colors: ["transparent"] }
+      }));
+    }
+
+    if (screenIndex === 2) {
+      renderChartOnce("effect", "effectChart", mergedOptions({
+        chart: { type: "line", height: 300 },
+        series: [
+          { name: "觀測偏移 μm", type: "scatter", data: [[42,-1.1],[48,-.8],[52,-.5],[56,-.4],[60,.1],[64,.3],[68,.7],[72,.9],[76,1.25],[80,1.48]] },
+          { name: "模型估計", type: "line", data: [[40,-1.25],[50,-.72],[60,0],[70,.72],[80,1.45]] }
+        ],
+        stroke: { width: [0, 3], curve: "straight" },
+        markers: { size: [5, 0], shape: "square" },
+        xaxis: {
+          type: "numeric",
+          title: { text: "相對濕度 RH%" },
+          labels: { formatter: value => Number(value).toFixed(0) + "%" }
+        },
+        yaxis: { title: { text: "厚度均值偏移 μm" } }
+      }));
+    }
+
+    if (screenIndex === 3) {
+      renderChartOnce("simulation", "simulationChart", mergedOptions({
+        chart: { type: "area", height: 285 },
+        series: [
+          { name: "誤報率 %", data: [8.6, 6.2, 4.1, 2.9, 2.1, 1.6] },
+          { name: "漏報率 %", data: [.7, .9, 1.2, 1.6, 2.3, 3.4] }
+        ],
+        stroke: { curve: "straight", width: 3 },
+        fill: { type: "gradient", gradient: { opacityFrom: .22, opacityTo: .03 } },
+        xaxis: { categories: ["±3.2", "±3.6", "±4.0", "±4.3", "±4.7", "±5.1"], title: { text: "控制限寬度 μm" } },
+        annotations: {
+          xaxis: [{ x: "±4.3", borderColor: "#2563eb", label: { text: "方案 B", style: { background: "#2563eb", color: "#fff" } } }]
+        }
+      }));
+    }
+
+    if (screenIndex === 5) {
+      renderChartOnce("monitor", "monitorChart", mergedOptions({
+        chart: { type: "line", height: 300 },
+        series: [
+          { name: "誤報率 %", data: [7.8, 7.3, 5.1, 3.8, 3.2, 2.7] },
+          { name: "漏報率 %", data: [1.6, 1.5, 1.7, 1.4, 1.5, 1.4] }
+        ],
+        stroke: { curve: "straight", width: [3, 2], dashArray: [0, 5] },
+        markers: { size: 4, shape: "square" },
+        xaxis: { categories: ["發布前", "D0", "D1", "D2", "D3", "目前"] },
+        yaxis: { min: 0, max: 9, labels: { formatter: value => value.toFixed(0) + "%" } },
+        annotations: {
+          yaxis: [{ y: 4, borderColor: "#c66309", strokeDashArray: 5, label: { text: "誤報回退門檻 4%", style: { background: "#c66309", color: "#fff" } } }]
+        }
+      }));
+    }
+  }
+
+  function normalizedIndex(rawIndex) {
+    const parsedIndex = Number(rawIndex);
+    return Number.isInteger(parsedIndex) && parsedIndex >= 0 && parsedIndex <= 5 ? parsedIndex : 0;
+  }
+
+  function show(rawIndex) {
+    const screenIndex = normalizedIndex(rawIndex);
+    document.querySelectorAll(".view").forEach((element, elementIndex) => {
+      element.classList.toggle("active", elementIndex === screenIndex);
+    });
+    document.querySelectorAll("[data-i]").forEach(button => {
+      const selected = Number(button.dataset.i) === screenIndex;
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-current", selected ? "step" : "false");
+    });
+    document.getElementById("crumbText").textContent = screenTitles[screenIndex];
+    document.title = screenTitles[screenIndex] + " · 工廠製程品質界線調整器｜Jvision 系統 Demo";
+    requestAnimationFrame(() => initCharts(screenIndex));
+  }
+
+  function indexFromHash() {
+    const match = window.location.hash.match(/(?:go=|v)([0-9]+)/);
+    return match ? normalizedIndex(match[1]) : 0;
+  }
+
+  function navigateTo(screenIndex) {
+    const targetHash = "#go=" + normalizedIndex(screenIndex);
+    if (window.location.hash === targetHash) show(screenIndex);
+    else window.location.hash = targetHash;
+  }
+
+  function notify(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    cancelAnimationFrame(toastFrame);
+    let frameCount = 0;
+    function countFrames() {
+      frameCount += 1;
+      if (frameCount > 150) {
+        toast.classList.remove("show");
+        return;
+      }
+      toastFrame = requestAnimationFrame(countFrames);
+    }
+    toastFrame = requestAnimationFrame(countFrames);
+  }
+
+  document.querySelectorAll("[data-i]").forEach(button => {
+    button.addEventListener("click", () => navigateTo(Number(button.dataset.i)));
+  });
+
+  document.querySelectorAll(".segment button").forEach(button => {
+    button.addEventListener("click", () => {
+      button.parentElement.querySelectorAll("button").forEach(item => item.classList.remove("on"));
+      button.classList.add("on");
+      notify("已切換為「" + button.textContent.trim() + "」檢視");
+    });
+  });
+
+  document.querySelectorAll(".scenario-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      button.parentElement.querySelectorAll(".scenario-btn").forEach(item => item.classList.remove("active"));
+      button.classList.add("active");
+      notify("已套用候選方案：" + button.querySelector("strong").textContent);
+    });
+  });
+
+  [
+    ["lclRange", "lclOut", value => (Number(value) / 10).toFixed(1) + " μm"],
+    ["uclRange", "uclOut", value => (Number(value) / 10).toFixed(1) + " μm"],
+    ["riskRange", "riskOut", value => (Number(value) / 10).toFixed(1) + "%"]
+  ].forEach(binding => {
+    const rangeElement = document.getElementById(binding[0]);
+    const outputElement = document.getElementById(binding[1]);
+    rangeElement.addEventListener("input", () => {
+      outputElement.textContent = binding[2](rangeElement.value);
+    });
+  });
+
+  document.querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      const messages = {
+        cluster: "分群分析完成：維持 3 個具穩定差異的產品情境",
+        simulate: "模擬完成：方案 B 在品質與產能間取得最佳平衡",
+        reject: "已建立退回草稿，將通知品質主管補充證據",
+        approve: "v3.3 已核准，可進入灰度發布",
+        release: "發布前檢核完成，下一產線等待設備工程師確認"
+      };
+      notify(messages[button.dataset.action] || "操作已完成");
+    });
+  });
+
+  window.addEventListener("hashchange", () => show(indexFromHash()));
+  show(indexFromHash());
+})();
+</script>
+</body>
+</html>
